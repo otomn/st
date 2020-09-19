@@ -1,3 +1,4 @@
+#!/bin/bash
 git branch
 echo '(use "git reset HEAD <file>..." to unstage)'
 git status -s | st -- -b gst
