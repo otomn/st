@@ -1,3 +1,4 @@
+#!/bin/bash
 case $# in
   0) cd "`st -p`" ;;
   1) 
