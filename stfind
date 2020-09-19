@@ -1,0 +1,7 @@
+#!/bin/bash
+kw="$@"
+if [ -z "$kw" ] ; then
+  find .
+else
+  find . -iregex ".*$kw.*" | st -- | grep -i $kw --colour
+fi

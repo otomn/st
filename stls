@@ -1,0 +1,16 @@
+#!/bin/bash
+lsOpt=()
+kw=""
+for opt in "$@" ; do
+  if echo "$opt" | grep "^-" -q ; then
+    lsOpt+=("$opt")
+  else
+    kw="$opt"
+  fi
+done
+result=`ls "${lsOpt[@]}"`
+if [ -z "$kw" ] ; then
+  ls | st --
+else
+  echo "$result" | grep -i "$kw" | st -- | grep -i "$kw" --colour
+fi

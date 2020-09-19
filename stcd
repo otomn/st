@@ -1,0 +1,11 @@
+case $# in
+  0) cd "`st -p`" ;;
+  1) 
+    folder="`st $1`"
+    if echo "$folder" | grep ^/ -q ; then
+      cd "$folder"
+    else
+      cd "`st -p`/$folder"
+    fi ;;
+  *) echo usage: stcd [line] ;;
+esac
