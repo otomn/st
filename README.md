@@ -2,6 +2,8 @@
 
 ## st
 
+(No idea why I picked that name)
+
 A tool for storing the output of any program and select lines to be used as input or argument to another programs
 
 e.g. Suppose the log folder looks like this: 
@@ -53,6 +55,6 @@ Suppose you are at `/etc/defaults` that contains folder `randomFolder`
     > . stcd 1      # cd into randomFolder
     > . stcd        # cd into /etc/defaults where st -- was called last
 
-# gst
+## gst
 
 A wrapper for git status to use st to process the output
