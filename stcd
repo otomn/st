@@ -1,12 +1,12 @@
 #!/bin/bash
-case $# in
-  0) cd "`st -p`" ;;
-  1) 
-    folder="`st $1`"
+p=`st $@ -p`
+folder=`st $@`
+if echo "$folder" | wc -l | grep '[ ]1$' -q ; then
     if echo "$folder" | grep ^/ -q ; then
       cd "$folder"
     else
-      cd "`st -p`/$folder"
-    fi ;;
-  *) echo usage: stcd [line] ;;
-esac
+      cd "$p/$folder"
+    fi
+else
+    cd "$p"
+fi
