@@ -8,12 +8,14 @@ debug = False
 stbucketsDefault = os.getenv("HOME") + "/stbuckets"
 stbucketDefault = "default"
 helpText = '''Usage: st -- [options]                   Cache input
-   or: st <range> [options] [<program>]  Output cached result to <program> as argument
-                                         <program> will be called once per output line
+   or: st <range> [options] [<program>]  Output cached result to <program> as
+                                         argument. <program> will be called
+                                         once per output line
 
 range:
    Specify the cached lines to output
-   If no range is given, output all lines and number each line if -o is not specified
+   If no range is given, output all lines and number each line if -o is not
+   specified
    INTEGER            Output specified line
    -                  Output all lines if this is the only range specified
    INTEGER -          Output all lines after (inclusive) the specified line
@@ -25,9 +27,11 @@ range:
      > st -           # All results
      > st 2 -         # All results after line 2
      > st 1 - -2      # All results from line 1 to 2nd last line 
-     > st 1 - 1 3 -   # All results from line 1 to line 1 and all results after line 3
-     > st - 1 2 3 -   # All restuls before line 1, line 2 and all results after line 3
-   INTEGER cannot be 0 and -<number of results> <= INTEGER <= <number of results>
+     > st 1 - 1 3 -   # All results from line 1 to line 1 
+                      #   and all results after line 3
+     > st - 1 2 3 -   # All restuls before line 1, line 2
+                      #   and all results after line 3
+   INTEGER cannot be 0 and -<# of results> <= INTEGER <= <# of results>
 
 options:
    -h  or  --help     Print Help (this message) and exit
