@@ -62,6 +62,7 @@ options:
 program:
    Can be any program with any number of specified arguments
    @ will be replaced with the result
+   # will be replaced with line number
    If no program is specified, default to echo
    Example:
      > ls | st -- > /dev/null
@@ -69,8 +70,8 @@ program:
      1 file1
      2 file2
      3 file3
-     > st - -o mv @ ~
-     # Moves all files to home folder'''
+     > st - -o mv @ ~/#_file
+     # Moves all files to home folder and rename to 1_file 2_file 3_file'''
 
 ### parse arg
 
@@ -222,12 +223,13 @@ if input:
   stfilew.close()
   exit()
 
-def run(args):
+def run(args, c):
   stpathr = open(stpath, "r")
   os.chdir(stpathr.readline().strip())
   stpathr.close()
   cmd = []
   for a in program:
+    a = a.replace("#", str(c))
     if "@" in a:
       cmd += [ a.replace("@", l) for l in args ]
     else:
@@ -238,11 +240,11 @@ def run(args):
     print(" ".join(args))
 
 if oneline:
-  run([ stcontent[l - 1] for l in lines])
+  run([ stcontent[l - 1] for l in lines], 1)
 else:
   c = 0
   for l in lines:
     c += 1
     if number:
       print(str(c) + " ", end="")
-    run([stcontent[l - 1]])
+    run([stcontent[l - 1]], c)
