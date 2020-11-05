@@ -1,12 +1,14 @@
 #!/bin/bash
-p=`st $@ -p`
-folder=`st $@`
-if echo "$folder" | wc -l | grep '[ ]1$' -q ; then
-    if echo "$folder" | grep ^/ -q ; then
-      cd "$folder"
+if `st $@ > /dev/null` ; then
+    p=`st $@ -p`
+    folder=`st $@`
+    if echo "$folder" | wc -l | grep '[ ]1$' -q ; then
+        if echo "$folder" | grep ^/ -q ; then
+          cd "$folder"
+        else
+          cd "$p/$folder"
+        fi
     else
-      cd "$p/$folder"
+        cd "$p"
     fi
-else
-    cd "$p"
 fi

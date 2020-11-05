@@ -235,7 +235,11 @@ def run(args, c):
     else:
       cmd.append(a)
   if cmd:
-    subprocess.run(cmd)
+    try:
+      subprocess.run(cmd)
+    except FileNotFoundError:
+      print("st: command not found:", cmd[0], file=sys.stderr)
+      exit(1)
   else:
     print(" ".join(args))
 
