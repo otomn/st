@@ -10,7 +10,7 @@ for opt in "$@" ; do
 done
 result=`ls "${lsOpt[@]}"`
 if [ -z "$kw" ] ; then
-  ls | st --
+  echo "$result" | st --
 else
   echo "$result" | grep -i "$kw" | st -- | grep -i "$kw" --colour
 fi
