@@ -2,13 +2,22 @@
 if `st $@ > /dev/null` ; then
     p=`st $@ -p`
     folder=`st $@`
+    target='.'
     if echo "$folder" | wc -l | grep '[ ]1$' -q ; then
         if echo "$folder" | grep ^/ -q ; then
-          cd "$folder"
+            target="$folder"
         else
-          cd "$p/$folder"
+            target="$p/$folder"
+        fi
+        if ! [ -d "$target" ] ; then
+            target="$p"
         fi
     else
-        cd "$p"
+        target="$p"
+    fi
+    if [ -d "$target" ] ; then
+        cd "$target"
+    else
+        cd "$target/.."
     fi
 fi
