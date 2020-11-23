@@ -4,7 +4,32 @@ import sys
 import os
 import re
 
+def subRunCompatible(*popenargs, **kwargs):
+  ''' use this if subprocess.run is not available on older versions of python'''
+  input = kwargs.pop("input", None)
+  check = kwargs.pop("handle", False)
+
+  if input is not None:
+    if 'stdin' in kwargs:
+      raise ValueError('stdin and input arguments may not both be used.')
+    kwargs['stdin'] = subprocess.PIPE
+
+  process = subprocess.Popen(*popenargs, **kwargs)
+  try:
+    stdout, stderr = process.communicate(input)
+  except:
+    process.kill()
+    process.wait()
+    raise
+  retcode = process.poll()
+  if check and retcode:
+    raise subprocess.CalledProcessError(
+      retcode, process.args, output=stdout, stderr=stderr)
+  return retcode, stdout, stderr
+
 debug = False
+#subRun = subprocess.run
+subRun = subRunCompatible # use this on older versions of python
 stbucketsDefault = os.getenv("HOME") + "/stbuckets"
 stbucketDefault = "default"
 helpText = '''Usage: st -- [options]                   Cache input
@@ -225,8 +250,12 @@ if input:
 
 def run(args, c):
   stpathr = open(stpath, "r")
-  os.chdir(stpathr.readline().strip())
+  wd = stpathr.readline().strip()
   stpathr.close()
+  if not os.path.isdir(wd):
+      print("st: directory deleted:", wd, file=sys.stderr)
+      exit(1)
+  os.chdir(wd)
   cmd = []
   for a in program:
     a = a.replace("#", str(c))
@@ -236,7 +265,7 @@ def run(args, c):
       cmd.append(a)
   if cmd:
     try:
-      subprocess.run(cmd)
+      subRun(cmd)
     except FileNotFoundError:
       print("st: command not found:", cmd[0], file=sys.stderr)
       exit(1)
