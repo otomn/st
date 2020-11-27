@@ -28,9 +28,9 @@ def subRunCompatible(*popenargs, **kwargs):
   return retcode, stdout, stderr
 
 debug = False
-#subRun = subprocess.run
-subRun = subRunCompatible # use this on older versions of python
-stbucketsDefault = os.getenv("HOME") + "/stbuckets"
+subRun = subprocess.run
+#subRun = subRunCompatible # use this on older versions of python
+stbucketsDefault = os.getenv("HOME") + "/.stbuckets"
 stbucketDefault = "default"
 helpText = '''Usage: st -- [options]                   Cache input
    or: st <range> [options] [<program>]  Output cached result to <program> as
@@ -75,7 +75,7 @@ options:
                       If not specified, $stbucket will be used
                       If $stbucket is not set, "default" will be used
                       BUCKET files will be stored under $stbuckets
-                      if not specified, ~/stbuckets will be used
+                      if not specified, ~/.stbuckets will be used
                       Example: 
                         > echo b1 | st -b bk1 -- > /dev/null
                         > echo b2 | st -b bk2 -- > /dev/null
