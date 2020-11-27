@@ -9,15 +9,12 @@ if `st $@ > /dev/null` ; then
         else
             target="$p/$folder"
         fi
-        if ! [ -d "$target" ] ; then
-            target="$p"
-        fi
     else
         target="$p"
     fi
     if [ -d "$target" ] ; then
         cd "$target"
     else
-        cd "$target/.."
+        cd "`dirname \"$target\"`"
     fi
 fi
