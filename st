@@ -3,6 +3,7 @@ import subprocess
 import sys
 import os
 import re
+import shutil
 
 def subRunCompatible(*popenargs, **kwargs):
   ''' use this if subprocess.run is not available on older versions of python'''
@@ -30,8 +31,6 @@ def subRunCompatible(*popenargs, **kwargs):
 debug = False
 subRun = subprocess.run
 #subRun = subRunCompatible # use this on older versions of python
-stbucketsDefault = os.getenv("HOME") + "/.stbuckets"
-stbucketDefault = "default"
 helpText = '''Usage: st -- [options]                   Cache input
    or: st <range> [options] [<program>]  Output cached result to <program> as
                                          argument. <program> will be called
@@ -60,10 +59,26 @@ range:
 
 options:
    -h  or  --help     Print Help (this message) and exit
-   -c  or  --clear    Clear all buckets and exit
+   -c  COLOUR         Set the colour control sequence of line number
+                      The format of this field is ANSI/VT100
+                      If not specified, $stcolor will be used
+                      If $stcolor is not set, "\\033[34m" will be used
+                      Pass -c "" can disable colouring
+                      Example:
+                        > export stcolor=$'\e[5m'
+                        > st
+                        1 file1
+                        2 file2
+                        # line numbers will blink
+   -C  or  --clear    Clear all buckets and exit
    -n                 Print total number of lines cached and exit
    -p  or  --path     Print path of the cache
-   -o  or  --oneline  Output result in oneline
+   -1                 (The numeric digit ``one''.)
+                      Force output to be one entry per line when listing
+                      This is the default when <range>, <program> or -s
+                      is specified
+   -s  or  --stream   In input mode, number and print lines immediately
+   -o  or  --oneline  Output results on oneline
                       Example:
                         > st - echo start _@_ end
                         start _1_ end
@@ -102,13 +117,20 @@ program:
 
 stbuckets = os.getenv("stbuckets")
 if not stbuckets:
-  stbuckets = stbucketsDefault
+  stbuckets = os.getenv("HOME") + "/.stbuckets"
+
 stbucket = os.getenv("stbucket")
 if not stbucket:
-  stbucket = stbucketDefault
+  stbucket = "default"
+
+stcolor = os.getenv("stcolor")
+if not stcolor:
+  stcolor = "\033[34m"
 
 clear = False
 count = False
+onePerLine = False
+streaming = False
 oneline = False
 input = False
 path = False
@@ -121,15 +143,24 @@ while i < len(sys.argv):
   if arg == "-h" or arg == "--help":
     print(helpText)
     exit()
-  elif arg == "-c" or arg == "--clear":
+  elif arg == "-c":
+    i += 1
+    if i < len(sys.argv):
+      stcolor = sys.argv[i]
+  elif arg == "-C" or arg == "--clear":
     clear = True
   elif arg == "-n":
     count = True
+  elif arg == "-1":
+    onePerLine = True
+  elif arg == "-s" or arg == "--stream":
+    streaming = True
   elif arg == "-o" or arg == "--oneline":
     oneline = True
   elif arg == "-b":
     i += 1
-    stbucket = sys.argv[i]
+    if i < len(sys.argv):
+      stbucket = sys.argv[i]
   elif arg == "-p" or arg == "--path":
     path = True
   elif arg == "--":
@@ -216,37 +247,32 @@ if debug:
 
 ### run
 
-if program and not "@" in str(program):
-  program.append("@")
+def printCache(stcontent, b): # b is shift in line number
+  stlen = len(stcontent)
+  numlen = len(str(stlen))
 
-if clear:
-  subprocess.run(["rm", "-r", stbuckets])
-  exit()
+  resetColor = "\033[0m" if stcolor else ""
+  entryFormat = "%s%%-%dd %s%%s" % (stcolor, numlen, resetColor)
+  lines = [entryFormat % (i + b, stcontent[i]) for i in range(len(stcontent))]
 
-if count:
-  print(maxLine)
-  exit()
+  # get pure text without escape sequence
+  pattern = re.compile("\x1b\[[0-9;]*[mGKH]")
+  escapedLines = [pattern.sub("", l) for l in lines]
 
-if path:
-  stpathr = open(stpath, "r")
-  print(stpathr.readline().strip())
-  stpathr.close()
-  exit()
+  terminalSize = shutil.get_terminal_size(fallback=(1, 1))[0]
+  cols = terminalSize // max([len(l) + 1 for l in escapedLines])
+  if onePerLine or cols < 1:
+    cols = 1
+  rows = stlen // cols + (stlen % cols > 0)
 
-if input:
-  stpathw = open(stpath, "w")
-  stpathw.write(os.getcwd())
-  stpathw.close()
-  stfilew = open(stfile, "w")
-  count = 0
-  for line in sys.stdin:
-    if not line.strip():
-      continue
-    count += 1
-    stfilew.write(line)
-    sys.stdout.write(str(count) + " " + line)
-  stfilew.close()
-  exit()
+  for i in range(rows):
+    for j in range(cols):
+      idx = j * rows + i
+      if idx < stlen:
+        escapedLen = len(lines[idx]) - len(escapedLines[idx])
+        lineFormat = "%%-%ds" % (terminalSize // cols + escapedLen)
+        print(lineFormat % lines[idx], end="")
+    print()
 
 def run(args, c):
   stpathr = open(stpath, "r")
@@ -272,12 +298,48 @@ def run(args, c):
   else:
     print(" ".join(args))
 
+if program and not "@" in str(program):
+  program.append("@")
+
+if clear:
+  subprocess.run(["rm", "-r", stbuckets])
+  exit()
+
+if count:
+  print(maxLine)
+  exit()
+
+if path:
+  stpathr = open(stpath, "r")
+  print(stpathr.readline().strip())
+  stpathr.close()
+  exit()
+
+if input:
+  stpathw = open(stpath, "w")
+  stpathw.write(os.getcwd())
+  stpathw.close()
+  stfilew = open(stfile, "w")
+  lines = []
+  for line in sys.stdin:
+    if not line.strip():
+      continue
+    stfilew.write(line)
+    lines.append(line.strip())
+    if streaming:
+      printCache(lines[-1:], len(lines))
+  stfilew.close()
+  if not streaming and lines:
+    printCache(lines, 1)
+  exit()
+
 if oneline:
   run([ stcontent[l - 1] for l in lines], 1)
-else:
-  c = 0
-  for l in lines:
-    c += 1
-    if number:
-      print(str(c) + " ", end="")
-    run([stcontent[l - 1]], c)
+elif stcontent:
+  if number:
+    printCache(stcontent, 1)
+  else:
+    c = 0
+    for l in lines:
+      c += 1
+      run([stcontent[l - 1]], c)
