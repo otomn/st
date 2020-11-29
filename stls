@@ -8,7 +8,7 @@ for opt in "$@" ; do
     kw="$opt"
   fi
 done
-result=`ls "${lsOpt[@]}"`
+result=`ls "${lsOpt[@]}" | sort -V`
 if [ -z "$kw" ] ; then
   echo "$result" | st --
 else
