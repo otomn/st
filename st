@@ -191,12 +191,16 @@ if not os.path.isfile(stfile):
 if not os.path.isfile(stpath):
   open(stpath, "w").close()
 
-### parse range
+stpathr = open(stpath, "r")
+stwd = stpathr.readline().strip()
+stpathr.close()
 
 stfiler = open(stfile, "r")
 stcontent = [ l[:-1] for l in stfiler.readlines() ]
 maxLine = len(stcontent)
 stfiler.close()
+
+### parse range
 
 lines = []
 lastNum = None
@@ -284,13 +288,10 @@ def printCache(stcontent, b): # b is shift in line number
     print()
 
 def run(args, c):
-  stpathr = open(stpath, "r")
-  wd = stpathr.readline().strip()
-  stpathr.close()
-  if not os.path.isdir(wd):
-      print("st: directory deleted:", wd, file=sys.stderr)
+  if not os.path.isdir(stwd):
+      print("st: directory deleted:", stwd, file=sys.stderr)
       exit(1)
-  os.chdir(wd)
+  os.chdir(stwd)
   cmd = []
   for a in program:
     a = a.replace("#", str(c))
@@ -328,19 +329,24 @@ if path:
   exit()
 
 if input:
-  stpathw = open(stpath, "w")
-  stpathw.write(os.getcwd())
-  stpathw.close()
-  stfilew = open(stfile, "w")
   lines = []
+  stfilew = None
   for line in sys.stdin:
+    if not stfilew:
+      # modify st files after the fist line arrive
+      # this is to prevent conflit when two st commands are connected using pipe
+      stpathw = open(stpath, "w")
+      stpathw.write(os.getcwd())
+      stpathw.close()
+      stfilew = open(stfile, "w")
     if not line.strip():
       continue
     stfilew.write(line)
     lines.append(line.strip())
     if streaming:
       printCache(lines[-1:], len(lines))
-  stfilew.close()
+  if stfilew:
+    stfilew.close()
   if not streaming and lines:
     printCache(lines, 1)
   exit()
