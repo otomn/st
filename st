@@ -72,6 +72,8 @@ options:
                         2 file2
                         # line numbers will blink
    -C  or  --clear    Clear all buckets and exit
+                      If -b is specified, clear the given basket
+                      If -b is specified as the last argument, clear default
    -n                 Print total number of lines cached and exit
    -p  or  --path     Print path of the cache
    -1                 (The numeric digit ``one''.)
@@ -129,6 +131,7 @@ if not stcolor:
   stcolor = "\033[34m"
 
 clear = False
+clearAll = True
 count = False
 onePerLine = False
 streaming = False
@@ -159,6 +162,7 @@ while i < len(sys.argv):
   elif arg == "-o" or arg == "--oneline":
     oneline = True
   elif arg == "-b":
+    clearAll = False
     i += 1
     if i < len(sys.argv):
       stbucket = sys.argv[i]
@@ -307,7 +311,10 @@ if program and not "@" in str(program):
   program.append("@")
 
 if clear:
-  subprocess.run(["rm", "-r", stbuckets])
+  if clearAll:
+    subRun(["rm", "-r", stbuckets])
+  else:
+    subRun(["rm", stpath, stfile])
   exit()
 
 if count:
