@@ -4,6 +4,7 @@ import sys
 import os
 import re
 import shutil
+import unicodedata
 
 def subRunCompatible(*popenargs, **kwargs):
   ''' use this if subprocess.run is not available on older versions of python'''
@@ -247,6 +248,12 @@ if debug:
 
 ### run
 
+VT100Patern = re.compile("\x1b\[[0-9;]*[mGKH]")
+
+def displayLen(s):
+  s = VT100Patern.sub("", s)
+  return sum([ unicodedata.east_asian_width(c) in "FW" for c in s]) + len(s)
+
 def printCache(stcontent, b): # b is shift in line number
   stlen = len(stcontent)
   numlen = len(str(stlen))
@@ -255,12 +262,10 @@ def printCache(stcontent, b): # b is shift in line number
   entryFormat = "%s%%-%dd %s%%s" % (stcolor, numlen, resetColor)
   lines = [entryFormat % (i + b, stcontent[i]) for i in range(len(stcontent))]
 
-  # get pure text without escape sequence
-  pattern = re.compile("\x1b\[[0-9;]*[mGKH]")
-  escapedLines = [pattern.sub("", l) for l in lines]
+  displayLens = [ displayLen(l) for l in lines ]
 
   terminalSize = shutil.get_terminal_size(fallback=(1, 1))[0]
-  cols = terminalSize // max([len(l) + 1 for l in escapedLines])
+  cols = terminalSize // (max(displayLens) + 1)
   if onePerLine or cols < 1:
     cols = 1
   rows = stlen // cols + (stlen % cols > 0)
@@ -269,8 +274,8 @@ def printCache(stcontent, b): # b is shift in line number
     for j in range(cols):
       idx = j * rows + i
       if idx < stlen:
-        escapedLen = len(lines[idx]) - len(escapedLines[idx])
-        lineFormat = "%%-%ds" % (terminalSize // cols + escapedLen)
+        diffLen = len(lines[idx]) - displayLens[idx]
+        lineFormat = "%%-%ds" % (terminalSize // cols + diffLen)
         print(lineFormat % lines[idx], end="")
     print()
 
