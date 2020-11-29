@@ -8,9 +8,12 @@ for opt in "$@" ; do
     kw="$opt"
   fi
 done
-result=`ls "${lsOpt[@]}" | sort -V`
+result="`ls "${lsOpt[@]}" | sort -V`"
+resultColored="`CLICOLOR_FORCE=1 ls -G "${lsOpt[@]}" | sort -V`"
 if [ -z "$kw" ] ; then
-  echo "$result" | st --
+  echo "$resultColored" | st --
+  echo "$result" | st -- > /dev/null
 else
-  echo "$result" | grep -i "$kw" | st -- | grep -i "$kw" --colour
+  echo "$result" | grep -i "$kw" --colour=always | st --
+  echo "$result" | grep -i "$kw" | st -- > /dev/null
 fi
