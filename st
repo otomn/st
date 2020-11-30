@@ -59,7 +59,7 @@ range:
    INTEGER cannot be 0 and -<# of results> <= INTEGER <= <# of results>
 
 options:
-   -h  or  --help     Print Help (this message) and exit
+   -h  or  --help     Print Help (this message) and then exit
    -c  COLOUR         Set the colour control sequence of line number
                       The format of this field is ANSI/VT100
                       If not specified, $stcolor will be used
@@ -74,8 +74,8 @@ options:
    -C  or  --clear    Clear all buckets and exit
                       If -b is specified, clear the given basket
                       If -b is specified as the last argument, clear default
-   -n                 Print total number of lines cached and exit
-   -p  or  --path     Print path of the cache
+   -n                 Print total number of lines cached and then exit
+   -p  or  --path     Print path of the cache and then exit
    -1                 (The numeric digit ``one''.)
                       Force output to be one entry per line when listing
                       This is the default when <range>, <program> or -s
@@ -106,15 +106,24 @@ program:
    Can be any program with any number of specified arguments
    @ will be replaced with the result
    # will be replaced with line number
+   Escape sequences: %@ -> @ ; %# -> # ; %% -> %
    If no program is specified, default to echo
+   If no replacement string is used, @ will be added to the end of the program
    Example:
      > ls | st -- > /dev/null
      > st
      1 file1
      2 file2
      3 file3
-     > st - -o mv @ ~/#_file
-     # Moves all files to home folder and rename to 1_file 2_file 3_file'''
+     > st - -o mv @ ~      # Moves all files to home folder
+     > st -                # same as st - echo @
+     file1
+     file2
+     file3
+     > st - "%@ # %#"      # same as st - echo "%@ # %#"
+     @ 1 #
+     @ 2 #
+     @ 3 #'''
 
 ### parse arg
 
@@ -182,8 +191,8 @@ while i < len(sys.argv):
         break
   i += 1
 
-stfile = stbuckets + "/" + stbucket + "_file"
-stpath = stbuckets + "/" + stbucket + "_path"
+stfile = stbuckets + "/" + stbucket + "_file" # contains cache
+stpath = stbuckets + "/" + stbucket + "_path" # contains working directory
 if not os.path.isdir(stbuckets):
   os.mkdir(stbuckets)
 if not os.path.isfile(stfile):
@@ -263,6 +272,8 @@ def displayLen(s):
   return sum([ unicodedata.east_asian_width(c) in "FW" for c in s]) + len(s)
 
 def printCache(stcontent, b): # b is shift in line number
+  if not stcontent:
+    return
   stlen = len(stcontent)
   numlen = len(str(stlen))
 
@@ -287,29 +298,26 @@ def printCache(stcontent, b): # b is shift in line number
         print(lineFormat % lines[idx], end="")
     print()
 
-def run(args, c):
-  if not os.path.isdir(stwd):
-      print("st: directory deleted:", stwd, file=sys.stderr)
-      exit(1)
-  os.chdir(stwd)
-  cmd = []
-  for a in program:
-    a = a.replace("#", str(c))
-    if "@" in a:
-      cmd += [ a.replace("@", l) for l in args ]
-    else:
-      cmd.append(a)
-  if cmd:
-    try:
-      subRun(cmd)
-    except FileNotFoundError:
-      print("st: command not found:", cmd[0], file=sys.stderr)
-      exit(1)
-  else:
-    print(" ".join(args))
+def prepRun(base, t, c):
+  # do replacement on arguments
+  replaced = False
+  result = []
+  for p in base.split("%%"):
+    replaced = replaced or "#" in p.replace("%#", "")
+    p = "#".join([ s.replace("#", str(c)) for s in p.split("%#") ])
 
-if program and not "@" in str(program):
-  program.append("@")
+    replaced = replaced or "@" in p.replace("%@", "")
+    p = "@".join([ s.replace("@", t) for s in p.split("%@") ])
+
+    result.append(p)
+  return ("%".join(result), replaced)
+
+def run(cmd):
+  try:
+    subRun(cmd)
+  except FileNotFoundError:
+    print("st: command not found:", cmd[0], file=sys.stderr)
+    exit(1)
 
 if clear:
   if clearAll:
@@ -347,17 +355,49 @@ if input:
       printCache(lines[-1:], len(lines))
   if stfilew:
     stfilew.close()
-  if not streaming and lines:
+  if not streaming:
     printCache(lines, 1)
   exit()
 
-if oneline:
-  run([ stcontent[l - 1] for l in lines], 1)
-elif stcontent:
-  if number:
-    printCache(stcontent, 1)
+if number:
+  printCache(stcontent, 1)
+
+if not os.path.isdir(stwd):
+  print("st: directory deleted:", stwd, file=sys.stderr)
+  exit(1)
+os.chdir(stwd)
+
+hasProgram = False
+hasSt = False
+
+cmds = [[]] if oneline else []
+for b in range(len(program) + 1):
+  if b < len(program):
+    base = program[b]
   else:
-    c = 0
-    for l in lines:
-      c += 1
-      run([stcontent[l - 1]], c)
+    if hasSt:
+      break
+    else:
+      base = "@" # do one more iteration with @ if no replacement is specified
+  c = 0
+  for l in lines:
+    c += 1
+    arg, replaced = prepRun(base, stcontent[l - 1], c)
+    if not replaced:
+      if b == 0:
+        hasProgram = True
+    else:
+      hasSt = True
+    if oneline:
+      cmds[0].append(arg)
+      if not replaced:
+        break; # oneline mode keep only one arg if no replacement
+    else:
+      if len(cmds) < c:
+        cmds.append([])
+      cmds[c - 1].append(arg)
+for cmd in cmds:
+  if hasProgram:
+    run(cmd)
+  else:
+    print(" ".join(cmd))
