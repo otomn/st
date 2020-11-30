@@ -12,7 +12,7 @@ result="`ls "${lsOpt[@]}" | sort -V`"
 resultColored="`CLICOLOR_FORCE=1 ls -G "${lsOpt[@]}" | sort -V`"
 if [ -z "$kw" ] ; then
   echo "$resultColored" | st --
-  echo "$result" | st -- > /dev/null
+  st - | sed $'s/\x1b\[[0-9;]*[mGKH]//g'| st -- > /dev/null
 else
   echo "$result" | grep -i "$kw" --colour=always | st --
   echo "$result" | grep -i "$kw" | st -- > /dev/null
