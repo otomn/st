@@ -2,14 +2,20 @@
 lsOpt=()
 kw=""
 for opt in "$@" ; do
-  if echo "$opt" | grep "^-" -q ; then
+  if [[ "$opt" == -* ]] ; then
     lsOpt+=("$opt")
   else
     kw="$opt"
   fi
 done
+
 result="`ls "${lsOpt[@]}" | sort -V`"
-resultColored="`CLICOLOR_FORCE=1 ls -G "${lsOpt[@]}" | sort -V`"
+if [[ "$OSTYPE" == "darwin"* || "$OSTYPE" == *"bsd"* ]] ; then
+  resultColored="`CLICOLOR_FORCE=1 ls -G "${lsOpt[@]}" | sort -V`"
+else
+  resultColored="`ls --color=always "${lsOpt[@]}" | sort -V`"
+fi
+
 if [ -z "$kw" ] ; then
   echo "$resultColored" | st --
   st - | sed $'s/\x1b\[[0-9;]*[mGKH]//g'| st -- > /dev/null
