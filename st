@@ -6,32 +6,7 @@ import re
 import shutil
 import unicodedata
 
-def subRunCompatible(*popenargs, **kwargs):
-  ''' use this if subprocess.run is not available on older versions of python'''
-  input = kwargs.pop("input", None)
-  check = kwargs.pop("handle", False)
-
-  if input is not None:
-    if 'stdin' in kwargs:
-      raise ValueError('stdin and input arguments may not both be used.')
-    kwargs['stdin'] = subprocess.PIPE
-
-  process = subprocess.Popen(*popenargs, **kwargs)
-  try:
-    stdout, stderr = process.communicate(input)
-  except:
-    process.kill()
-    process.wait()
-    raise
-  retcode = process.poll()
-  if check and retcode:
-    raise subprocess.CalledProcessError(
-      retcode, process.args, output=stdout, stderr=stderr)
-  return retcode, stdout, stderr
-
 debug = False
-subRun = subprocess.run
-#subRun = subRunCompatible # use this on older versions of python
 helpText = '''Usage: st -- [options]                   Cache input
    or: st <range> [options] [<program>]  Output cached result to <program> as
                                          argument. <program> will be called
@@ -264,6 +239,31 @@ if debug:
   exit()
 
 ### run
+
+def subRunCompatible(*popenargs, **kwargs):
+  ''' use this if subprocess.run is not available on older versions of python'''
+  input = kwargs.pop("input", None)
+  check = kwargs.pop("handle", False)
+
+  if input is not None:
+    if 'stdin' in kwargs:
+      raise ValueError('stdin and input arguments may not both be used.')
+    kwargs['stdin'] = subprocess.PIPE
+
+  process = subprocess.Popen(*popenargs, **kwargs)
+  try:
+    stdout, stderr = process.communicate(input)
+  except:
+    process.kill()
+    process.wait()
+    raise
+  retcode = process.poll()
+  if check and retcode:
+    raise subprocess.CalledProcessError(
+      retcode, process.args, output=stdout, stderr=stderr)
+  return retcode, stdout, stderr
+
+subRun = subprocess.run if sys.version_info.minor >= 5 else subRunCompatible
 
 VT100Patern = re.compile("\x1b\[[0-9;]*[mGKH]")
 
