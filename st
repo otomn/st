@@ -122,6 +122,7 @@ streaming = False
 oneline = False
 input = False
 path = False
+logging = False
 rawLines = []
 program = []
 
@@ -145,6 +146,8 @@ while i < len(sys.argv):
     streaming = True
   elif arg == "-o" or arg == "--oneline":
     oneline = True
+  elif arg == "-l" or arg == "--logging":
+    logging = True
   elif arg == "-b":
     clearAll = False
     i += 1
@@ -398,6 +401,8 @@ for b in range(len(program) + 1):
       cmds[c - 1].append(arg)
 for cmd in cmds:
   if hasProgram:
+    if logging:
+      print("st:", " ".join(cmd), file=sys.stderr)
     run(cmd)
   else:
     print(" ".join(cmd))
