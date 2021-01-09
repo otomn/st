@@ -56,6 +56,7 @@ options:
                       This is the default when <range>, <program> or -s
                       is specified
    -s  or  --stream   In input mode, number and print lines immediately
+   -l  or  --logging  Print the command before executing
    -o  or  --oneline  Output results on oneline
                       Example:
                         > st - echo start _@_ end
