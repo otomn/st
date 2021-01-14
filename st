@@ -365,6 +365,7 @@ if input:
 
 if number:
   printCache(stcontent, 1)
+  exit()
 
 if not os.path.isdir(stwd):
   print("st: directory deleted:", stwd, file=sys.stderr)
