@@ -68,3 +68,5 @@ If the file you selected is not a directory, `stcd` will cd into the parent dire
 ## gst
 
 A wrapper for git status to use st to process the output
+
+To colorize the output, set `color.status` to `always`
