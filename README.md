@@ -19,7 +19,7 @@ e.g. Suppose the log folder looks like this:
     
 and you want to combine logs 01-03 to 01-10 into one file.
 
-With st, you can do the following:
+With `st`, you can do the following:
 
     > ls | st --
     1 2020-01-01.log
@@ -36,13 +36,15 @@ You can manually choose a different bucket by using `-b` option or set `stbucket
 
 Use `st -h` to see the full documentation for more functionalities, more examples included.
 
+Note: please do not use `temp` as the bucket name as some scripts below also use this bucket as temp storage
+
 ## stls
 
 Because `ls | st --` is so frequently used, I decided to write a wrapper for it.
 
-If additional arguments are provided: if the argument starts with "-" then it will be used as an argument for ls, otherwise it will be used as a filtering regex (case ignored).
+If additional arguments are provided: if the argument starts with `-` then it will be used as an argument for `ls`, otherwise it will be used as a filtering regex (case ignored).
 
-e.g. `stls -aS '\.c'` is the same as `ls -aS | grep '\.c' | st --`
+e.g. `stls -aS '\.c'` is the same as `ls -aS | grep -i '\.c' | st --`
 
 ## stfind
 
@@ -67,9 +69,9 @@ If the file you selected is not a directory, `stcd` will cd into the parent dire
 
 ## gst
 
-A wrapper for git status to use st to process the output
+A wrapper for `git status -s` to use `st` for caching the files
 
-To colorize the output, set `color.status` to `always`
+To colorize the output, set `color.status` to `always` in git config
 
 ## stps
 
