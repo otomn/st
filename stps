@@ -1,0 +1,47 @@
+#!/bin/bash
+psOpt=()
+kw=""
+top=4194304 # maximum pid, aka print all results
+for opt in "$@" ; do
+    if [[ "$opt" == -* ]] ; then
+        psOpt+=("`echo $opt | cut -c2-`") # remove the dash
+    elif [[ "$opt" =~ ^[0-9]+$ ]] ; then
+        top=$opt
+    else
+        kw="$opt"
+    fi
+done
+if [[ ${#psOpt[@]} -gt 0 && "${psOpt[0]}" =~ ^- ]] ; then
+    psOpt=(ax ${psOpt[@]}) # add default argument
+fi
+
+echo ps ${psOpt[@]}
+ps ${psOpt[@]} | st -- > /dev/null # no quote so that "" will not be passed
+lineOne=`st 1`
+if [[ -n "$kw" ]] ; then # filter by keyword
+    st 2 - | grep -i "$kw" | head -n $top | st -- > /dev/null
+else
+    st 2 - | head -n $top | st -- > /dev/null # no header
+fi
+
+numLen=$(st -n | wc -m)
+lineLen=$(( $(tput cols) - $numLen ))
+
+pidLine=1
+for title in $lineOne ; do
+    if [[ "$title" == PID ]] ; then
+        break
+    fi
+    pidLine=$(($pidLine + 1))
+done
+
+printf "%-${numLen}s"
+echo "$lineOne" | cut -c-$lineLen
+
+if [[ -n "$kw" ]] ; then # highlight
+    st - | grep -i -E "$kw|\$" --colour=always | st -- -b temp --nostrip
+    st -b temp -C
+else
+    st - | cut -c-$lineLen | st -- --nostrip
+fi
+st - | awk "{print \$$pidLine}" | st -- > /dev/null

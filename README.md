@@ -70,3 +70,19 @@ If the file you selected is not a directory, `stcd` will cd into the parent dire
 A wrapper for git status to use st to process the output
 
 To colorize the output, set `color.status` to `always`
+
+## stps
+
+A wrapper for `ps` that label the lines and cache the PIDs where the location of PID in each line is extracted from the header line of `ps`
+
+If additional arguments are provided:
+
+- If the argument starts with `-` then it will be used as an argument for ps with the first `-` removed
+    - e.g. `stps -aux --r` calls `ps aux -r`
+    - You can also do `stps -"aux -r"` which also calls `ps aux -r`
+    - If no combined option for ps (e.g. `aux`) is specified, default to `ax`
+    - If you want to call `ps` with no argument, just pass `-`
+- If the argument is a digit, it will be used as the line limit
+- Otherwise the argument will be used as a keyword for filtering results
+
+Putting all together, `stps -"aux -r" zsh 5` will list top 5 zsh programs that use the most cpu among all users
