@@ -5,6 +5,9 @@ import os
 import re
 import shutil
 import unicodedata
+import signal
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE,SIG_DFL) # ignore broken pipe
 
 debug = False
 helpText = '''Usage: st -- [options]                   Cache input
