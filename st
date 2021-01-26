@@ -77,6 +77,7 @@ options:
                         b1
                         > st - -b bk2
                         b2
+   --nostrip          Do not strip the input lines when printing
 
 program:
    Can be any program with any number of specified arguments
@@ -126,6 +127,7 @@ path = False
 logging = False
 rawLines = []
 program = []
+nostrip = False
 
 i = 1
 while i < len(sys.argv):
@@ -158,6 +160,8 @@ while i < len(sys.argv):
     path = True
   elif arg == "--":
     input = True
+  elif arg == "--nostrip":
+    nostrip = True
   else:
     if arg == "-":
       rawLines.append(arg)
@@ -354,7 +358,7 @@ if input:
     if not line.strip():
       continue
     stfilew.write(line)
-    lines.append(line.strip())
+    lines.append(line.strip(os.linesep) if nostrip else line.strip())
     if streaming:
       printCache(lines[-1:], len(lines))
   if stfilew:
