@@ -67,6 +67,12 @@ If the file you selected is not a directory, `stcd` will cd into the parent dire
     1 ./src/python/common.py
     > . stcd 1      # cd into ./src/python
 
+It is recommanded to add the following line in your .profile or .bashrc or .zshrc ...
+
+    alias stcd='. stcd'
+
+So that you can use `stcd` without adding the dot at the front
+
 ## gst
 
 A wrapper for `git status -s` to use `st` for caching the files
