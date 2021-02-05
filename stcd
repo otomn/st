@@ -3,7 +3,7 @@ if `st $@ > /dev/null` ; then
     p=`st $@ -p`
     folder=`st $@`
     target='.'
-    if echo "$folder" | wc -l | grep '[ ]1$' -q ; then
+    if echo "$folder" | wc -l | grep '^[ ]*1$' -q ; then
         if echo "$folder" | grep ^/ -q ; then
             target="$folder"
         else
