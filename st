@@ -6,8 +6,9 @@ import re
 import shutil
 import unicodedata
 import signal
-from signal import signal, SIGPIPE, SIG_DFL
+from signal import signal, SIGPIPE, SIG_DFL, SIGINT, default_int_handler
 signal(SIGPIPE,SIG_DFL) # ignore broken pipe
+signal(SIGINT, default_int_handler) # catch KeyboardInterrupt
 
 debug = False
 helpText = '''Usage: st -- [options]                   Cache input
@@ -329,6 +330,8 @@ def run(cmd):
   except FileNotFoundError:
     print("st: command not found:", cmd[0], file=sys.stderr)
     exit(1)
+  except KeyboardInterrupt:
+    exit()
 
 if clear:
   if clearAll:
