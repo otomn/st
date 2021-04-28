@@ -188,7 +188,7 @@ if not os.path.isfile(stpath):
   open(stpath, "w").close()
 
 stpathr = open(stpath, "r")
-stwd = stpathr.readline().strip()
+stwd = stpathr.readline().strip("\n")
 stpathr.close()
 
 stfiler = open(stfile, "r")
