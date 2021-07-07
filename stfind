@@ -3,7 +3,8 @@ kw="$@"
 if [ -z "$kw" ] ; then
   find . | st --
 else
-  find . -iregex ".*$kw.*" | sort -V | st -- > /dev/null
+  result="`find . -iregex ".*$kw.*" | sort -V`"
+  echo "$result" | st -- > /dev/null
   st - | grep -i $kw --colour=always | st -- -b temp
   st -C -b temp
 fi
