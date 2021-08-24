@@ -52,6 +52,8 @@ Similar to stls, just a wrapper for `find` for searching files in subdirectories
 
 ## stgrep
 Similar to stls, just a wrapper for grep. The cache lines are files names.
+Use `-C` as the first arg to turn on case sensitive
+`stgrep [-C] PATTERNS [FILE...]`
 
 ## stcd
 
