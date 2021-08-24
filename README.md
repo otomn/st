@@ -50,6 +50,9 @@ e.g. `stls -aS '\.c'` is the same as `ls -aS | grep -i '\.c' | st --`
 
 Similar to stls, just a wrapper for `find` for searching files in subdirectories.
 
+## stgrep
+Similar to stls, just a wrapper for grep. The cache lines are files names.
+
 ## stcd
 
 A warpper for changing directory with ease.

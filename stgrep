@@ -1,0 +1,13 @@
+#!/bin/bash
+key="$1"
+shift
+case $# in
+  0) grep "$key" -inrI . | st -- > /dev/null ;;
+  *) grep "$key" -inrI "$@" | st -- > /dev/null ;;
+esac
+fmt='{ printf "\x1b[35m" $1 "\x1b[32m" $2 "\x1b[0m "'
+fmt="$fmt ; for (i=3; i<=NF; i++) printf \$i \" \" ; printf \"\n\"}"
+st - | sed 's/:/: /' | \
+    awk "$fmt" | grep --colour=always "$key" | st -- -b temp
+st - | cut -f 1 -d : | st -- > /dev/null
+
