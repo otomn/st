@@ -17,7 +17,7 @@ grep "$key" $ignore -nrI "$domain" | st -- > /dev/null
 
 fmt='{ printf "\x1b[35m" $1 "\x1b[32m" $2 "\x1b[0m "'
 fmt="$fmt ; for (i=3; i<=NF; i++) printf \$i \" \" ; printf \"\n\"}"
-st - | sed 's/:/: /' | \
+st - | sed 's/:/: /' | sed 's/:/: /2' | \
   awk "$fmt" | grep $ignore --colour=always "$key" | st -- -s -b temp
 st - | cut -f 1 -d : | st -- > /dev/null
 
