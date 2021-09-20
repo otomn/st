@@ -39,6 +39,8 @@ range:
 
 options:
    -h  or  --help     Print Help (this message) and then exit
+   -e                 Exit immediate if a program returns none zero exit code
+                      The exit code will be the same as that program
    -c  COLOUR         Set the colour control sequence of line number
                       The format of this field is ANSI/VT100
                       If not specified, $stcolor will be used
@@ -120,6 +122,7 @@ stcolor = os.getenv("stcolor")
 if not stcolor:
   stcolor = "\033[34m"
 
+exitOnError = False
 clear = False
 clearAll = True
 count = False
@@ -139,6 +142,8 @@ while i < len(sys.argv):
   if arg == "-h" or arg == "--help":
     print(helpText)
     exit()
+  elif arg == "-e":
+    exitOnError = True
   elif arg == "-c":
     i += 1
     if i < len(sys.argv):
@@ -273,7 +278,9 @@ def subRunCompatible(*popenargs, **kwargs):
   if check and retcode:
     raise subprocess.CalledProcessError(
       retcode, process.args, output=stdout, stderr=stderr)
-  return retcode, stdout, stderr
+  result = type('', (), {})
+  result.returncode = retcode
+  return result
 
 subRun = subprocess.run if sys.version_info.minor >= 5 else subRunCompatible
 
@@ -326,7 +333,9 @@ def prepRun(base, t, c):
 
 def run(cmd):
   try:
-    subRun(cmd)
+    retcode = subRun(cmd).returncode
+    if retcode and exitOnError:
+        exit(retcode)
   except FileNotFoundError:
     print("st: command not found:", cmd[0], file=sys.stderr)
     exit(1)
