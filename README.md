@@ -55,6 +55,9 @@ Similar to stls, just a wrapper for grep. The cache lines are files names.
 Use `-C` as the first arg to turn on case sensitive
 `stgrep [-C] PATTERNS [FILE...]`
 
+## stv
+A wrapper for `vim -p [FILE...]`
+
 ## stcd
 
 A warpper for changing directory with ease.
