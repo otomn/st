@@ -376,8 +376,12 @@ if input:
     lines.append(line.strip(os.linesep) if nostrip else line.strip())
     if streaming:
       printCache(lines[-1:], len(lines))
-  if stfilew:
-    stfilew.close()
+  if not stfilew:
+    stpathw = open(stpath, "w")
+    stpathw.write(os.getcwd())
+    stpathw.close()
+    stfilew = open(stfile, "w")
+  stfilew.close()
   if not streaming:
     printCache(lines, 1)
   exit()
