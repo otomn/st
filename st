@@ -47,7 +47,7 @@ options:
                       If $stcolor is not set, "\\033[34m" will be used
                       Pass -c "" can disable colouring
                       Example:
-                        > export stcolor=$'\e[5m'
+                        > export stcolor=$'\\e[5m'
                         > st
                         1 file1
                         2 file2
@@ -284,7 +284,7 @@ def subRunCompatible(*popenargs, **kwargs):
 
 subRun = subprocess.run if sys.version_info.minor >= 5 else subRunCompatible
 
-VT100Patern = re.compile("\x1b\[[0-9;]*[mGKH]")
+VT100Patern = re.compile("\x1b\\[[0-9;]*[mGKH]")
 
 def displayLen(s):
   s = VT100Patern.sub("", s)
