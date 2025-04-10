@@ -1,10 +1,18 @@
 #!/bin/bash
-kw="$@"
-if [ -z "$kw" ] ; then
-  find . | st --
-else
-  result="`find . -iregex ".*$kw.*" | sort -V`"
-  echo "$result" | st -- > /dev/null
-  st - | grep -i $kw --colour=always | st -- -b temp
-  st -C -b temp
-fi
+case $# in
+	0) # list file tree
+		find . | st --
+		exit ;;
+	1) # search file with name
+		kw="$1"
+		rt="." ;;
+    *) # other arguments are passed to find (note: pass ~+ for abs path)
+		kw="$1"
+        shift
+		rt="$@" ;;
+esac
+result="`find $rt -iregex ".*$kw.*" | sort -V`"
+echo "$result" | st -- > /dev/null
+st - | grep -i $kw --colour=always | st -- -b temp
+st -C -b temp
+
