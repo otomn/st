@@ -1,2 +1,2 @@
 #!/bin/bash
-st "$@" -o vim -p
+st "$@" -o $EDITOR -p
