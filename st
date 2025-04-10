@@ -117,6 +117,7 @@ if not stbuckets:
 stbucket = os.getenv("stbucket")
 if not stbucket:
   stbucket = "default"
+stbucket = stbucket.replace("/", "-")
 
 stcolor = os.getenv("stcolor")
 if not stcolor:
