@@ -5,6 +5,12 @@ if [ "$1" == "-C" ] ; then
   shift
 fi
 
+generated='\.generated\.'
+if [ "$1" == "-g" ] ; then
+    generated='$^'
+    shift
+fi
+
 key="$1"
 shift
 
@@ -13,7 +19,7 @@ case $# in
   *) domain=("$@") ;;
 esac
 
-grep "$key" $ignore -nrI "${domain[@]}" | st -- > /dev/null
+grep "$key" $ignore -nrI "${domain[@]}" | grep -v "$generated" | st -- > /dev/null
 
 fmt='{ printf "\x1b[35m" $1 "\x1b[32m" $2 "\x1b[0m "'
 fmt="$fmt ; for (i=3; i<=NF; i++) printf(\"%s \", \$i) ; printf \"\n\"}"
