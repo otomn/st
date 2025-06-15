@@ -12,9 +12,9 @@ signal(SIGINT, default_int_handler) # catch KeyboardInterrupt
 
 debug = False
 helpText = '''Usage: st -- [options]                   Cache input
-   or: st <range> [options] [<program>]  Output cached result to <program> as
-                                         argument. <program> will be called
-                                         once per output line
+   or: st <range> [<options>] [<program>]  Output cached result to <program> as
+                                           argument. <program> will be called
+                                           once per output line
 
 range:
    Specify the cached lines to output
@@ -43,11 +43,11 @@ options:
                       The exit code will be the same as that program
    -c  COLOUR         Set the colour control sequence of line number
                       The format of this field is ANSI/VT100
-                      If not specified, $stcolor will be used
-                      If $stcolor is not set, "\\033[34m" will be used
+                      If not specified, $STCOLOR will be used
+                      If $STCOLOR is not set, "\\033[34m" will be used
                       Pass -c "" can disable colouring
                       Example:
-                        > export stcolor=$'\\e[5m'
+                        > export STCOLOR='\\e[5m'
                         > st
                         1 file1
                         2 file2
@@ -57,8 +57,9 @@ options:
                       If -b is specified as the last argument, clear default
    -n                 Print total number of lines cached and then exit
    -p  or  --path     Print path of the cache and then exit
-   -1                 (The numeric digit ``one''.)
-                      Force output to be one entry per line when listing
+   --oneperline       Force output to be one entry per line when listing
+                      Otherwise, st will render multiple columns to use the
+                      full width of the screen
                       This is the default when <range>, <program> or -s
                       is specified
    -s  or  --stream   In input mode, number and print lines immediately
@@ -72,9 +73,9 @@ options:
                         > st - -o echo start _@_ end
                         start _1_ _2_ _3_ end
    -b BUCKET          Use the specified bucket
-                      If not specified, $stbucket will be used
-                      If $stbucket is not set, "default" will be used
-                      BUCKET files will be stored under $stbuckets
+                      If not specified, $STBUCKET will be used
+                      If $STBUCKET is not set, "default" will be used
+                      BUCKET files will be stored under $STBUCKETS
                       if not specified, ~/.stbuckets will be used
                       Example: 
                         > echo b1 | st -b bk1 -- > /dev/null
@@ -110,16 +111,16 @@ program:
 
 ### parse arg
 
-stbuckets = os.getenv("stbuckets")
+stbuckets = os.getenv("STBUCKETS")
 if not stbuckets:
   stbuckets = os.getenv("HOME") + "/.stbuckets"
 
-stbucket = os.getenv("stbucket")
+stbucket = os.getenv("STBUCKET")
 if not stbucket:
   stbucket = "default"
 stbucket = stbucket.replace("/", "-")
 
-stcolor = os.getenv("stcolor")
+stcolor = os.getenv("STCOLOR")
 if not stcolor:
   stcolor = "\033[34m"
 
@@ -153,7 +154,7 @@ while i < len(sys.argv):
     clear = True
   elif arg == "-n":
     count = True
-  elif arg == "-1":
+  elif arg == "--oneperline":
     onePerLine = True
   elif arg == "-s" or arg == "--stream":
     streaming = True
@@ -366,7 +367,7 @@ if input:
   for line in sys.stdin:
     if not stfilew:
       # modify st files after the fist line arrive
-      # this is to prevent conflit when two st commands are connected using pipe
+      # this is to prevent conflict when two st commands are connected using pipe
       stpathw = open(stpath, "w")
       stpathw.write(os.getcwd())
       stpathw.close()
