@@ -32,7 +32,7 @@ With `st`, you can do the following:
     > st 2 - 6 -o cat > out.log
 
 `st` bucket (cache) is saved in the file system, which means different terminal sessions can access it at the same time. e.g. you can run `stls` in one terminal and `st 1 vim` in another.
-You can manually choose a different bucket by using `-b` option or set `stbucket` in the environment.
+You can manually choose a different bucket by using `-b` option or set `STBUCKET` in the environment.
 
 Use `st -h` to see the full documentation for more functionalities, more examples included.
 
