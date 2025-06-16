@@ -85,6 +85,16 @@ options:
                         > st - -b bk2
                         b2
    --nostrip          Do not strip the input lines when printing
+   --shell            Use shell to run the program
+                      Example:
+                        > export TEST='echo hi'
+                        > echo '$TEST' | st -- > /dev/null
+                        > st - echo           # print as is
+                        $TEST
+                        > st - --shell echo   # print with expansion
+                        echo hi
+                        > st - --shell        # expand and run input as program
+                        hi
 
 program:
    Can be any program with any number of specified arguments
@@ -107,7 +117,8 @@ program:
      > st - "%@ # %#"      # same as st - echo "%@ # %#"
      @ 1 #
      @ 2 #
-     @ 3 #'''
+     @ 3 #
+'''
 
 ### parse arg
 
@@ -137,12 +148,13 @@ logging = False
 rawLines = []
 program = []
 nostrip = False
+shell = False
 
 i = 1
 while i < len(sys.argv):
   arg = sys.argv[i]
   if arg == "-h" or arg == "--help":
-    print(helpText)
+    print(helpText, end='')
     exit()
   elif arg == "-e":
     exitOnError = True
@@ -173,6 +185,8 @@ while i < len(sys.argv):
     input = True
   elif arg == "--nostrip":
     nostrip = True
+  elif arg == "--shell":
+    shell = True
   else:
     if arg == "-":
       rawLines.append(arg)
@@ -335,7 +349,10 @@ def prepRun(base, t, c):
 
 def run(cmd):
   try:
-    retcode = subRun(cmd).returncode
+    if shell:
+      retcode = subRun(' '.join(cmd), shell=True).returncode
+    else:
+      retcode = subRun(cmd).returncode
     if retcode and exitOnError:
         exit(retcode)
   except FileNotFoundError:
@@ -397,7 +414,7 @@ if not os.path.isdir(stwd):
   exit(1)
 os.chdir(stwd)
 
-hasProgram = False
+hasProgram = shell
 hasSt = False
 
 cmds = [[]] if oneline else []

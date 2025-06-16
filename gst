@@ -3,4 +3,8 @@ set -e
 git --no-pager branch
 echo '(use "git reset HEAD <file>..." to unstage)'
 git status -s | st -- --nostrip
-st - bash -c "echo '@'" | awk '{$1=""; print substr($0,2)}' | st -- > /dev/null
+# get the last argument
+# known issue, doesn't work if the filename contains '->'
+st - | sed 's/^ *[^ ]*//' | sed 's/.* -> //' | st -- > /dev/null
+# unquote filename if filename contains space
+st - --shell echo | st -- > /dev/null
