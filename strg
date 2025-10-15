@@ -1,0 +1,21 @@
+#!/bin/bash
+case_ignore=-S # smart
+if [ "$1" == -C ] ; then
+  case_ignore=-s
+  shift
+fi
+
+generated='\.generated\.'
+if [ "$1" == -g ] ; then
+    generated='$^'
+    shift
+fi
+
+key="$1"
+shift
+
+rg --no-ignore --vimgrep "$key" $case_ignore "$@" | rg -v "$generated" | st -- > /dev/null
+
+st - | vimgrepcolorizer rg $case_ignore --color=always "$key" | st -- -s -b temp
+st - | cut -f 1 -d : | st -- > /dev/null
+

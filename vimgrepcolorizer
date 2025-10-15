@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+from subprocess import Popen, PIPE
+import sys
+import select
+import signal
+import atexit
+
+colorizer = Popen(sys.argv[1:], bufsize=0, stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True)
+
+def handle_exit(*args):
+    colorizer.terminate()
+
+atexit.register(handle_exit)
+signal.signal(signal.SIGTERM, handle_exit)
+signal.signal(signal.SIGINT, handle_exit)
+
+results = []
+
+def process_stdin():
+    line = sys.stdin.readline()
+    if not line:
+        colorizer.stdin.close()
+        return
+    parts = line.split(':')
+    result = "\033\13335m" + parts[0] \
+        + ":\033\13332m" + parts[1] \
+        + ":\033\13334m" + parts[2] \
+        + ":\033\1330m "
+    results.append(result)
+    colorizer.stdin.write(":".join(parts[3:]))
+    colorizer.stdin.flush()
+
+def process_colorizer_in():
+    line = colorizer.stdout.readline()
+    if not line:
+        exit()
+    sys.stdout.write(results.pop(0) + line.strip() + "\n")
+    sys.stdout.flush()
+
+while True:
+    fds = select.select([sys.stdin, colorizer.stdout], [], [], 1)
+    for fd in fds[0]:
+        if fd == sys.stdin:
+            process_stdin()
+        else:
+            process_colorizer_in()
