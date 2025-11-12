@@ -15,7 +15,7 @@ key="$1"
 shift
 
 rg --no-ignore --vimgrep "$key" $case_ignore "$@" | rg -v "$generated" | st -- > /dev/null
-
-st - | vimgrepcolorizer rg $case_ignore --color=always "$key" | st -- -s -b temp
+temp_b=`mktemp -u XXXXXX`
+st - | vimgrepcolorizer rg $case_ignore --color=always "$key" | st -- -s -b $temp_b
 st - | cut -f 1 -d : | st -- > /dev/null
-
+st -C -b $temp_b

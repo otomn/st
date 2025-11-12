@@ -39,8 +39,9 @@ printf "%-${numLen}s"
 echo "$lineOne" | cut -c-$lineLen
 
 if [[ -n "$kw" ]] ; then # highlight
-    st - | grep -i -E "$kw|\$" --colour=always | st -- -b temp --nostrip
-    st -b temp -C
+    temp_b=`mktemp -u XXXXXX`
+    st - | grep -i -E "$kw|\$" --colour=always | st -- -b $temp_b --nostrip
+    st -C -b $temp_b
 else
     st - | cut -c-$lineLen | st -- --nostrip
 fi

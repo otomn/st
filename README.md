@@ -36,8 +36,6 @@ You can manually choose a different bucket by using `-b` option or set `STBUCKET
 
 Use `st -h` to see the full documentation for more functionalities, more examples included.
 
-Note: please do not use `temp` as the bucket name as some scripts below also use this bucket as temp storage
-
 ## stls
 
 Because `ls | st --` is so frequently used, I decided to write a wrapper for it.
