@@ -333,13 +333,13 @@ def printCache(stcontent, b): # b is shift in line number
         print(lineFormat % lines[idx], end="")
     print()
 
-def prepRun(base, t, c):
+def prepRun(base, t, l):
   # do replacement on arguments
   replaced = False
   result = []
   for p in base.split("%%"):
     replaced = replaced or "#" in p.replace("%#", "")
-    p = "#".join([ s.replace("#", str(c)) for s in p.split("%#") ])
+    p = "#".join([ s.replace("#", str(l)) for s in p.split("%#") ])
 
     replaced = replaced or "@" in p.replace("%@", "")
     p = "@".join([ s.replace("@", t) for s in p.split("%@") ])
@@ -429,7 +429,7 @@ for b in range(len(program) + 1):
   c = 0
   for l in lines:
     c += 1
-    arg, replaced = prepRun(base, stcontent[l - 1], c)
+    arg, replaced = prepRun(base, stcontent[l - 1], l)
     if not replaced:
       if b == 0:
         hasProgram = True
